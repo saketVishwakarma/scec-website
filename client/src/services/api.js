@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const BASE_URL = import.meta.env.DEV
   ? '/api'
-  : 'https://scec-server.onrender.com/api';  // ← your Render URL
+  : 'https://scecallahabad.onrender.com/api';  // ← your Render URL
 
 const api = axios.create({
   baseURL:         BASE_URL,
