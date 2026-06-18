@@ -1,14 +1,15 @@
 import axios from 'axios';
 
-const api = axios.create({
-   baseURL: import.meta.env.DEV
+const BASE_URL = import.meta.env.DEV
   ? '/api'
-  : 'https://scec-server.onrender.com/api',
-  withCredentials: true, // send httpOnly cookie
-  headers: { 'Content-Type': 'application/json' },
+  : 'https://scec-server.onrender.com/api';  // ← your Render URL
+
+const api = axios.create({
+  baseURL:         BASE_URL,
+  withCredentials: true,   // ← keep true
+  headers:         { 'Content-Type': 'application/json' },
 });
 
-// Attach bearer token from localStorage as fallback (in case cookies are blocked)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('pim_token');
   if (token) {
@@ -17,7 +18,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Global response handler — redirect to login on 401
 api.interceptors.response.use(
   (response) => response,
   (error) => {
