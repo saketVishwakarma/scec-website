@@ -30,10 +30,34 @@ connectDB();
 // ── Security middleware ─────────────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 // ── CORS ─────────────────────────────────────────────────────────
+// ── CORS ─────────────────────────────────────────────────────────
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://scec-websites.vercel.app',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: true,   // allows ALL origins temporarily
-  credentials: true,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (Postman, mobile apps, server-to-server)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, origin); // ← return the exact origin, not true
+    }
+
+    console.log('CORS blocked origin:', origin);
+    return callback(new Error(`CORS blocked: ${origin}`));
+  },
+  credentials: true,                // ← keep true
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['set-cookie'],
 }));
+
+// ── Handle preflight requests ─────────────────────────────────────
+app.options('*', cors());;
 
 // ── Rate limiting ────────────────────────────────────────────────
 const generalLimiter = rateLimit({
