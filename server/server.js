@@ -27,41 +27,46 @@ const app = express();
 // ── Connect MongoDB ─────────────────────────────────────────────
 connectDB();
 
-// ── Security middleware ─────────────────────────────────────────
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-// ── CORS ─────────────────────────────────────────────────────────
-// ── CORS ─────────────────────────────────────────────────────────
-const allowedOrigins = [
+// ── CORS — hardcoded + env variable ────────────────────────────
+const ALLOWED = [
   'http://localhost:5173',
   'http://localhost:3000',
   'https://scec-websites.vercel.app',
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (Postman, mobile apps, server-to-server)
-    if (!origin) return callback(null, true);
+console.log('✅ Allowed CORS origins:', ALLOWED);
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, origin); // ← return the exact origin, not true
-    }
+// Handle preflight for ALL routes first
+app.options('*', (req, res) => {
+  const origin = req.headers.origin;
+  if (ALLOWED.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(204);
+});
 
-    console.log('CORS blocked origin:', origin);
-    return callback(new Error(`CORS blocked: ${origin}`));
-  },
-  credentials: true,                // ← keep true
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['set-cookie'],
-}));
+// Apply CORS headers to every request
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (ALLOWED.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  }
+  next();
+});
 
-// ── Handle preflight requests ─────────────────────────────────────
-app.options('*', cors());;
+// ── Security middleware ─────────────────────────────────────────
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 // ── Rate limiting ────────────────────────────────────────────────
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
+  windowMs: 15 * 60 * 1000,
   max: 200,
   message: { success: false, message: 'Too many requests, please try again later.' },
 });
@@ -85,7 +90,12 @@ if (process.env.NODE_ENV === 'development') {
 
 // ── Health check ─────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'PIM API is running', env: process.env.NODE_ENV });
+  res.json({
+    success: true,
+    message: 'SCEC API is running',
+    env: process.env.NODE_ENV,
+    allowedOrigins: ALLOWED,
+  });
 });
 
 // ── Routes ───────────────────────────────────────────────────────
@@ -109,8 +119,8 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // ── Start server ─────────────────────────────────────────────────
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`\n🚀 PIM Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  console.log(`\n🚀 SCEC Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
   console.log(`📡 API: http://localhost:${PORT}/api/health\n`);
 });
