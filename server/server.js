@@ -32,6 +32,8 @@ const ALLOWED = [
   'http://localhost:5173',
   'http://localhost:3000',
   'https://scec-websites.vercel.app',
+  'https://saraswatieducation.info',
+  'https://www.saraswatieducation.info',   // keep during transition
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
