@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X, GraduationCap } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -17,41 +17,67 @@ export default function Navbar() {
 
   const linkClass = ({ isActive }) =>
     `px-3 py-2 rounded-md text-sm transition-colors ${
-      isActive ? 'text-white bg-white/10' : 'text-white/70 hover:text-white hover:bg-white/5'
+      isActive
+        ? 'text-white bg-white/10'
+        : 'text-white/70 hover:text-white hover:bg-white/5'
     }`;
 
   return (
     <header className="bg-navy sticky top-0 z-50 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2 font-serif-display text-xl font-bold text-gold-light">
-            <GraduationCap size={26} />
-            SCEC Allahabad
+
+          {/* ── Logo ── */}
+          <Link to="/" className="flex items-center gap-2.5">
+            <img
+              src="/logo.png"
+              alt="SCEC Allahabad"
+              className="h-9 w-9 object-contain"
+            />
+            <div className="leading-tight">
+              <div className="font-serif-display text-lg font-bold text-white">
+                SCEC
+              </div>
+              <div className="text-[10px] text-white/50 uppercase tracking-wider -mt-0.5">
+                Allahabad
+              </div>
+            </div>
           </Link>
 
+          {/* ── Desktop nav ── */}
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((l) => (
-              <NavLink key={l.to} to={l.to} className={linkClass} end={l.to === '/'}>
+              <NavLink
+                key={l.to}
+                to={l.to}
+                className={linkClass}
+                end={l.to === '/'}
+              >
                 {l.label}
               </NavLink>
             ))}
           </nav>
 
-          <div className="hidden md:block">
+          {/* ── CTA + mobile toggle ── */}
+          <div className="flex items-center gap-3">
             <Link
               to="/enquiry"
-              className="bg-gold hover:bg-gold-light hover:text-navy text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
+              className="hidden md:block bg-gold hover:bg-gold-light hover:text-navy text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
             >
               Apply Now
             </Link>
+            <button
+              className="md:hidden text-white"
+              onClick={() => setOpen(!open)}
+              aria-label="Toggle menu"
+            >
+              {open ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
-
-          <button className="md:hidden text-white" onClick={() => setOpen(!open)} aria-label="Toggle menu">
-            {open ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
       </div>
 
+      {/* ── Mobile menu ── */}
       {open && (
         <div className="md:hidden border-t border-white/10 px-4 py-3 space-y-1">
           {navLinks.map((l) => (

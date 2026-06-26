@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A3466"/>
+      <stop offset="100%" stop-color="#0B1F4A"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5C842"/>
+      <stop offset="100%" stop-color="#D4A017"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shield shape -->
+  <path d="M100 8
+           L184 38
+           L184 96
+           C184 144 148 178 100 192
+           C52 178 16 144 16 96
+           L16 38
+           Z"
+        fill="url(#navyGrad)"/>
+
+  <!-- Inner shield border -->
+  <path d="M100 20
+           L172 46
+           L172 96
+           C172 138 142 167 100 180
+           C58 167 28 138 28 96
+           L28 46
+           Z"
+        fill="none" stroke="url(#goldGrad)" stroke-width="2.5" opacity="0.5"/>
+
+  <!-- Open book pages forming S-curve -->
+  <path d="M100 64
+           C82 64 66 70 56 80
+           C66 88 82 92 100 92
+           C118 92 134 88 144 80
+           C134 70 118 64 100 64Z"
+        fill="url(#goldGrad)"/>
+
+  <path d="M100 92
+           C82 92 66 98 56 108
+           C66 118 82 124 100 124
+           C118 124 134 118 144 108
+           C134 98 118 92 100 92Z"
+        fill="#F8F7F4"/>
+
+  <!-- Center spine line -->
+  <line x1="100" y1="64" x2="100" y2="124" stroke="#0B1F4A" stroke-width="2"/>
+
+  <!-- Rising star accent (achievement) -->
+  <path d="M100 36 L103.5 44.5 L112.5 45.5 L105.5 51.5 L107.5 60.5 L100 55.5 L92.5 60.5 L94.5 51.5 L87.5 45.5 L96.5 44.5 Z"
+        fill="url(#goldGrad)"/>
+
+  <!-- Base ribbon line -->
+  <path d="M58 142 C72 152 86 158 100 158 C114 158 128 152 142 142"
+        fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+</svg>
