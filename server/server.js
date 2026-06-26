@@ -2,7 +2,6 @@ require('dotenv').config();
 require('express-async-errors');
 
 const express = require('express');
-const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
@@ -27,19 +26,20 @@ const app = express();
 // ── Connect MongoDB ─────────────────────────────────────────────
 connectDB();
 
-// ── CORS — hardcoded + env variable ────────────────────────────
+// ── ALLOWED ORIGINS ────────────────────────────────────────────
 const ALLOWED = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://scec-websites.vercel.app',
   'https://saraswatieducation.info',
-  'https://www.saraswatieducation.info',   // keep during transition
+  'https://www.saraswatieducation.info',
+  'https://scec-websites.vercel.app',
+  'https://www.scec-websites.vercel.app',
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
 console.log('✅ Allowed CORS origins:', ALLOWED);
 
-// Handle preflight for ALL routes first
+// ── CORS preflight — must be FIRST before everything ───────────
 app.options('*', (req, res) => {
   const origin = req.headers.origin;
   if (ALLOWED.includes(origin)) {
@@ -48,10 +48,11 @@ app.options('*', (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Vary', 'Origin');
   res.sendStatus(204);
 });
 
-// Apply CORS headers to every request
+// ── CORS headers on every request ──────────────────────────────
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (ALLOWED.includes(origin)) {
@@ -59,12 +60,16 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+    res.setHeader('Vary', 'Origin');
   }
   next();
 });
 
-// ── Security middleware ─────────────────────────────────────────
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+// ── Security ────────────────────────────────────────────────────
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginOpenerPolicy: false,
+}));
 
 // ── Rate limiting ────────────────────────────────────────────────
 const generalLimiter = rateLimit({
@@ -112,17 +117,20 @@ app.use('/api/enquiries',    enquiryRoutes);
 app.use('/api/users',        userRoutes);
 app.use('/api/settings',     settingsRoutes);
 
-// ── 404 handler ──────────────────────────────────────────────────
+// ── 404 ──────────────────────────────────────────────────────────
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` });
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+  });
 });
 
 // ── Global error handler ─────────────────────────────────────────
 app.use(errorHandler);
 
-// ── Start server ─────────────────────────────────────────────────
+// ── Start ────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`\n🚀 SCEC Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-  console.log(`📡 API: http://localhost:${PORT}/api/health\n`);
+  console.log(`📡 Health: http://localhost:${PORT}/api/health\n`);
 });
