@@ -8,24 +8,38 @@ exports.createEnquiry = async (req, res) => {
   const { name, email, phone, course, message } = req.body;
 
   if (!name || !email || !phone) {
-    return res.status(400).json({ success: false, message: 'Name, email, and phone are required' });
+    return res.status(400).json({
+      success: false,
+      message: 'Name, email, and phone are required',
+    });
   }
 
   const enquiry = await Enquiry.create({ name, email, phone, course, message });
 
-  // Fire-and-forget emails — don't block response if email fails
-  Promise.allSettled([
-    sendEmail({
-      to: email,
-      subject: 'Thank you for your enquiry — SCEC Allahabad',
-      html: enquiryConfirmationHTML(name, course || 'General Enquiry'),
-    }),
-    sendEmail({
-      to: process.env.ADMIN_EMAIL,
+  // Send emails with proper error logging
+  try {
+    console.log('📧 Sending confirmation email to:', email);
+    await sendEmail({
+      to:      email,
+      subject: 'Thank you for your enquiry — Saraswati Education Allahabad',
+      html:    enquiryConfirmationHTML(name, course || 'General Enquiry'),
+    });
+    console.log('✅ Confirmation email sent to:', email);
+  } catch (err) {
+    console.error('❌ Failed to send confirmation email:', err.message);
+  }
+
+  try {
+    console.log('📧 Sending admin notification to:', process.env.ADMIN_EMAIL);
+    await sendEmail({
+      to:      process.env.ADMIN_EMAIL,
       subject: `New Enquiry: ${name} — ${course || 'General'}`,
-      html: enquiryAdminHTML({ name, email, phone, course, message }),
-    }),
-  ]).catch(() => {});
+      html:    enquiryAdminHTML({ name, email, phone, course, message }),
+    });
+    console.log('✅ Admin notification sent to:', process.env.ADMIN_EMAIL);
+  } catch (err) {
+    console.error('❌ Failed to send admin email:', err.message);
+  }
 
   res.status(201).json({
     success: true,
@@ -33,7 +47,6 @@ exports.createEnquiry = async (req, res) => {
     data: { id: enquiry._id },
   });
 };
-
 // @desc    Get all enquiries (admin, supports ?status= filter)
 // @route   GET /api/enquiries
 // @access  Private (admin)
